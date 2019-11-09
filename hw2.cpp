@@ -145,7 +145,7 @@ vector<Point> getSegmentPoints(vector<Point> controlPoints, int curveNo, Point &
     }
 
     double t = 1.0 / subDivisions;
-    for (double d = 0; d <= 1; d += t)
+    for (double d = 0; d <= 1.01; d += t)
     {
         Point current = getSegmentPoint(controlPoints, d);
         segmentPoints->push_back(current);
