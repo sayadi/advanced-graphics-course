@@ -245,6 +245,45 @@ void drawMidPoints()
     glEnd();
 }
 
+Point rotatePoint(Point p, Point c, bool clockwise, double angle = 0.0872665)
+{
+    double sineAngle = sin(angle);
+    double cosineAngle = cos(angle);
+
+    // Translate point back to origin:
+    p.x -= c.x;
+    p.y -= c.y;
+
+    // Rotate point
+    double xNew;
+    double yNew;
+    if (clockwise)
+    {
+        xNew = p.x * cosineAngle + p.y * sineAngle;
+        yNew = -p.x * sineAngle + p.y * cosineAngle;
+    }
+    else
+    {
+        xNew = p.x * cosineAngle - p.y * sineAngle;
+        yNew = p.x * sineAngle + p.y * cosineAngle;
+    }
+
+    // Translate point back:
+    p.x = xNew + c.x;
+    p.y = yNew + c.y;
+
+    return p;
+}
+
+void rotateControlPoints(vector<Point> *controlPoints, Point midPoint, bool clockwise)
+{
+    for (int i = 0; i < controlPoints->size(); i++)
+    {
+        Point current = (*controlPoints)[i];
+        (*controlPoints)[i] = rotatePoint(current, midPoint, clockwise);
+    }
+}
+
 /* ********** ********** ********** */
 
 /* ********** OpenGL functions ********** */
@@ -406,14 +445,45 @@ void myKeyboard(unsigned char key, int x, int y)
 
         case 'i':
         case 'I':
+        {
             showIntersections = !showIntersections;
             break;
+        }
 
         case 'm':
         case 'M':
+        {
             showMidPoints = !showMidPoints;
             break;
+        }
 
+        case 'q':
+        case 'Q':
+        {
+            if (curve1Mode)
+            {
+                rotateControlPoints(&controlPoints1, curve1MidPoint, false);
+            }
+            else
+            {
+                rotateControlPoints(&controlPoints2, curve2MidPoint, false);
+            }
+            break;
+        }
+
+        case 'e':
+        case'E':
+        {
+            if (curve1Mode)
+            {
+                rotateControlPoints(&controlPoints1, curve1MidPoint, true);
+            }
+            else
+            {
+                rotateControlPoints(&controlPoints2, curve2MidPoint, true);
+            }
+            break;
+        }
     }
 
     glutPostRedisplay();
