@@ -69,7 +69,7 @@ void CreateGlutWindow()
     glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_MULTISAMPLE);
     glutInitWindowPosition (0, 0);
     glutInitWindowSize (screenWidth, screenHeight);
-    glutCreateWindow ("Assignment 2 - Mohamad Al Sayadi");
+    glutCreateWindow ("Template - Mohamad Al Sayadi");
 }
 
 void CreateGlutCallbacks()
