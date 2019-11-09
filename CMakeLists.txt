@@ -5,11 +5,12 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_executable(
     AdvancedCG_Assignment2
-        hw2.cpp
+#    template.cpp
+#    hw1.cpp
+    hw2.cpp
 #    perps.cpp
 #    segments.cpp
-#    hw1.cpp
-    )
+)
 
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
