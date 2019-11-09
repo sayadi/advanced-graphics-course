@@ -13,8 +13,7 @@
 #include <GL/gl.h>
 #endif
 
-#include <math.h>
-#include <iostream>
+#include <cmath>
 
 #include <vector>
 #include "vector.h"
@@ -26,13 +25,13 @@ const int screenHeight = 480;
 
 /* ********** Global Variables ********** */
 
-bool curve1Mode = true;
+bool curve1Selected = true;
 vector<Point> controlPoints1;
 vector<Point> segmentPoints1;
 vector<bool> points1Dragged;
 Point curve1MidPoint;
 
-bool curve2Mode = false;
+bool curve2Selected = false;
 vector<Point> controlPoints2;
 vector<Point> segmentPoints2;
 vector<bool> points2Dragged;
@@ -40,17 +39,29 @@ Point curve2MidPoint;
 
 double subDivisions = 10;
 
-int controlPointRed = 128;
-int controlPointGreen = 0;
-int controlPointBlue = 128;
+// Purple
+double activeControlPointRed = 1;
+double activeControlPointGreen = 0;
+double activeControlPointBlue = 1;
 
-int segmentRed = 0;
-int segmentGreen = 0;
-int segmentBlue = 0;
+// Red
+double inactiveControlPointRed = 1;
+double inactiveControlPointGreen = 0;
+double inactiveControlPointBlue = 0;
 
-int segmentPointRed = 0;
-int segmentPointGreen = 0;
-int segmentPointBlue = 1;
+// Black
+double activeSegmentRed = 0;
+double activeSegmentGreen = 0;
+double activeSegmentBlue = 0;
+
+// Green
+double inactiveSegmentRed = 0;
+double inactiveSegmentGreen = 1;
+double inactiveSegmentBlue = 0;
+
+double segmentPointRed = 0;
+double segmentPointGreen = 0;
+double segmentPointBlue = 1;
 
 bool showIntersections = false;
 
@@ -65,7 +76,7 @@ bool isPoint1AroundPoint2(double xOne, double yOne, double xTwo, double yTwo)
     return (abs(xOne - xTwo) <= 12) && (abs(yOne - yTwo) <= 12);
 }
 
-void setPointColor(bool isPointDragged)
+void setControlPointColor(bool isPointDragged, bool curveIsActive)
 {
     int draggedPointRed = 0;
     int draggedPointGreen = 0;
@@ -77,7 +88,15 @@ void setPointColor(bool isPointDragged)
     }
     else
     {
-        glColor3d(controlPointRed, controlPointGreen, controlPointBlue);
+        if (curveIsActive)
+        {
+
+            glColor3d(activeControlPointRed, activeControlPointGreen, activeControlPointBlue);
+        }
+        else
+        {
+            glColor3d(inactiveControlPointRed, inactiveControlPointGreen, inactiveControlPointBlue);
+        }
     }
 }
 
@@ -137,13 +156,20 @@ vector<Point> getSegmentPoints(vector<Point> controlPoints, int curveNo, Point &
     return *segmentPoints;
 }
 
-void drawCurve(vector<Point> controlPoints, int curveNo, Point &midPoint)
+void drawCurve(vector<Point> controlPoints, int curveNo, Point &midPoint, bool curveIsActive)
 {
     vector<Point> segmentPoints = getSegmentPoints(controlPoints, curveNo, midPoint);
 
     // Draw the curve's segments
-    glPointSize(4);
-    glColor3d(segmentRed, segmentGreen, segmentBlue);
+    glLineWidth(2);
+    if (curveIsActive)
+    {
+        glColor3d(activeSegmentRed, activeSegmentGreen, activeSegmentBlue);
+    }
+    else
+    {
+        glColor3d(inactiveSegmentRed, inactiveSegmentGreen, inactiveSegmentBlue);
+    }
 
     glBegin(GL_LINE_STRIP);
     for (auto & point : segmentPoints)
@@ -164,13 +190,13 @@ void drawCurve(vector<Point> controlPoints, int curveNo, Point &midPoint)
 
 }
 
-void drawControlPoints(vector<Point> controlPoints, vector<bool> pointsDragged)
+void drawControlPoints(vector<Point> controlPoints, vector<bool> pointsDragged, bool curveIsActive)
 {
     glPointSize(8);
     glBegin(GL_POINTS);
     for (int i = 0; i < controlPoints.size(); i++)
     {
-        setPointColor(pointsDragged[i]);
+        setControlPointColor(pointsDragged[i], curveIsActive);
         glVertex2d(controlPoints[i].x, controlPoints[i].y);
     }
     glEnd();
@@ -220,7 +246,8 @@ void drawIntersectionPoints()
     vector<Point> intersectionPoints= getIntersectionPoints();
 
     glPointSize(8);
-    glColor3d(255, 215, 0);
+    // Orange
+    glColor3d(1, 0.5, 0);
     glBegin(GL_POINTS);
     for (auto & intersectionPoint : intersectionPoints)
     {
@@ -232,7 +259,8 @@ void drawIntersectionPoints()
 void drawMidPoints()
 {
     glPointSize(8);
-    glColor3d(1,0,0);
+    // Dark purple
+    glColor3d(0.5, 0.0, 0.5);
     glBegin(GL_POINTS);
     if (controlPoints1.size() >= 2)
     {
@@ -294,39 +322,23 @@ void display()
     segmentPoints1.clear();
     segmentPoints2.clear();
 
-    controlPointRed = 128;
-    controlPointGreen = 0;
-    controlPointBlue = 128;
-
-    segmentRed = 0;
-    segmentGreen = 0;
-    segmentBlue = 0;
-
     segmentPointRed = 0;
     segmentPointGreen = 0;
     segmentPointBlue = 1;
     if (controlPoints1.size() >= 2)
     {
-        drawCurve(controlPoints1, 1, curve1MidPoint);
+        drawCurve(controlPoints1, 1, curve1MidPoint, curve1Selected);
     }
-    drawControlPoints(controlPoints1, points1Dragged);
-
-    controlPointRed = 1;
-    controlPointGreen = 0;
-    controlPointBlue = 0;
-
-    segmentRed = 0;
-    segmentGreen = 1;
-    segmentBlue = 0;
+    drawControlPoints(controlPoints1, points1Dragged, curve1Selected);
 
     segmentPointRed = 0;
     segmentPointGreen = 0;
     segmentPointBlue = 1;
     if (controlPoints2.size() >= 2)
     {
-        drawCurve(controlPoints2, 2, curve2MidPoint);
+        drawCurve(controlPoints2, 2, curve2MidPoint, curve2Selected);
     }
-    drawControlPoints(controlPoints2, points2Dragged);
+    drawControlPoints(controlPoints2, points2Dragged, curve2Selected);
 
     if (showIntersections && controlPoints1.size() >= 2 && controlPoints2.size() >= 2)
     {
@@ -348,7 +360,7 @@ void myDraggedMouse(int x, int y)
 
     vector<Point> *points = &controlPoints1;
     vector<bool> *pointsDragged = &points1Dragged;
-    if (curve2Mode)
+    if (curve2Selected)
     {
         points = &controlPoints2;
         pointsDragged = &points2Dragged;
@@ -372,7 +384,7 @@ void myMouse(int button, int state, int x, int y)
 
     vector<Point> *points = &controlPoints1;
     vector<bool> *pointsDragged = &points1Dragged;
-    if (curve2Mode)
+    if (curve2Selected)
     {
         points = &controlPoints2;
         pointsDragged = &points2Dragged;
@@ -413,13 +425,13 @@ void myKeyboard(unsigned char key, int x, int y)
     switch (key)
     {
         case '1':
-            curve1Mode = true;
-            curve2Mode = false;
+            curve1Selected = true;
+            curve2Selected = false;
             break;
 
         case '2':
-            curve1Mode = false;
-            curve2Mode = true;
+            curve1Selected = false;
+            curve2Selected = true;
             break;
 
         case '6':
@@ -460,7 +472,7 @@ void myKeyboard(unsigned char key, int x, int y)
         case 'q':
         case 'Q':
         {
-            if (curve1Mode)
+            if (curve1Selected)
             {
                 rotateControlPoints(&controlPoints1, curve1MidPoint, false);
             }
@@ -472,9 +484,9 @@ void myKeyboard(unsigned char key, int x, int y)
         }
 
         case 'e':
-        case'E':
+        case 'E':
         {
-            if (curve1Mode)
+            if (curve1Selected)
             {
                 rotateControlPoints(&controlPoints1, curve1MidPoint, true);
             }
