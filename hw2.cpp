@@ -31,13 +31,15 @@ bool curve1Mode = true;
 vector<Point> controlPoints1;
 vector<Point> segmentPoints1;
 vector<bool> points1Dragged;
+Point curve1MidPoint;
 
 bool curve2Mode = false;
 vector<Point> controlPoints2;
 vector<Point> segmentPoints2;
 vector<bool> points2Dragged;
+Point curve2MidPoint;
 
-int subDivisions = 10;
+double subDivisions = 10;
 
 int controlPointRed = 128;
 int controlPointGreen = 0;
@@ -52,6 +54,8 @@ int segmentPointGreen = 0;
 int segmentPointBlue = 1;
 
 bool showIntersections = false;
+
+bool showMidPoints = false;
 
 /* ********** ********** ********** */
 
@@ -93,24 +97,24 @@ double binom(double n, double k)
     return coeff;
 }
 
-Point getSegmentPoint(vector<Point> points, double d)
+Point getSegmentPoint(vector<Point> controlPoints, double d)
 {
 
-    unsigned long order = points.size() - 1;
+    unsigned long order = controlPoints.size() - 1;
 
     double x = 0;
     double y = 0;
 
     for (unsigned long i = 0; i <= order; i++)
     {
-        x = x + (binom(order, i) * pow((1 - d), (order - i)) * pow(d, i) * (points[i].x));
-        y = y + (binom(order, i) * pow((1 - d), (order - i)) * pow(d, i) * (points[i].y));
+        x = x + (binom(order, i) * pow((1 - d), (order - i)) * pow(d, i) * (controlPoints[i].x));
+        y = y + (binom(order, i) * pow((1 - d), (order - i)) * pow(d, i) * (controlPoints[i].y));
     }
 
     return {x, y};
 }
 
-vector<Point> getSegmentPoints(vector<Point> controlPoints, int curveNo)
+vector<Point> getSegmentPoints(vector<Point> controlPoints, int curveNo, Point &midPoint)
 {
     vector<Point> *segmentPoints;
     if (curveNo == 1)
@@ -125,15 +129,18 @@ vector<Point> getSegmentPoints(vector<Point> controlPoints, int curveNo)
     double t = 1.0 / subDivisions;
     for (double d = 0; d <= 1; d += t)
     {
-        segmentPoints->push_back(getSegmentPoint(controlPoints, d));
+        Point current = getSegmentPoint(controlPoints, d);
+        segmentPoints->push_back(current);
     }
+
+    midPoint = getSegmentPoint(controlPoints, 0.50);
 
     return *segmentPoints;
 }
 
-void drawCurve(vector<Point> controlPoints, int curveNo)
+void drawCurve(vector<Point> controlPoints, int curveNo, Point &midPoint)
 {
-    vector<Point> segmentPoints = getSegmentPoints(controlPoints, curveNo);
+    vector<Point> segmentPoints = getSegmentPoints(controlPoints, curveNo, midPoint);
 
     // Draw the curve's segments
     glPointSize(4);
@@ -170,18 +177,18 @@ void drawControlPoints(vector<Point> controlPoints, vector<bool> pointsDragged)
     glEnd();
 }
 
-bool getIntersectionPoint(Point A, Point B, Point C, Point D, Point& I)
+bool getIntersectionPoint(Point a, Point b, Point c, Point d, Point& i)
 {
-    Vector b = B - A;
-    Vector d = D - C;
-    Vector bPerp = perp(b);
-    Vector dPerp = perp(d);
-    Vector c = C - A;
+    Vector bVector = b - a;
+    Vector dVector = d - c;
+    Vector bPerp = perp(bVector);
+    Vector dPerp = perp(dVector);
+    Vector cVector = c - a;
 
-    double t = (c % dPerp) / (b % dPerp);
-    double u = -(c % bPerp) / (d % bPerp);
+    double t = (cVector % dPerp) / (bVector % dPerp);
+    double u = -(cVector % bPerp) / (dVector % bPerp);
 
-    I = A + t * b;
+    i = a + t * bVector;
 
     return t >= 0 && t <= 1 && u >= 0 && u <= 1;
 }
@@ -223,6 +230,22 @@ void drawIntersectionPoints()
     glEnd();
 }
 
+void drawMidPoints()
+{
+    glPointSize(8);
+    glColor3d(1,0,0);
+    glBegin(GL_POINTS);
+    if (controlPoints1.size() >= 2)
+    {
+        glVertex2d(curve1MidPoint.x, curve1MidPoint.y);
+    }
+    if (controlPoints2.size() >= 2)
+    {
+        glVertex2d(curve2MidPoint.x, curve2MidPoint.y);
+    }
+    glEnd();
+}
+
 /* ********** ********** ********** */
 
 /* ********** OpenGL functions ********** */
@@ -246,7 +269,7 @@ void display()
     segmentPointBlue = 1;
     if (controlPoints1.size() >= 2)
     {
-        drawCurve(controlPoints1, 1);
+        drawCurve(controlPoints1, 1, curve1MidPoint);
     }
     drawControlPoints(controlPoints1, points1Dragged);
 
@@ -263,13 +286,18 @@ void display()
     segmentPointBlue = 1;
     if (controlPoints2.size() >= 2)
     {
-        drawCurve(controlPoints2, 2);
+        drawCurve(controlPoints2, 2, curve2MidPoint);
     }
     drawControlPoints(controlPoints2, points2Dragged);
 
     if (showIntersections && controlPoints1.size() >= 2 && controlPoints2.size() >= 2)
     {
         drawIntersectionPoints();
+    }
+
+    if (showMidPoints)
+    {
+        drawMidPoints();
     }
 
     glutSwapBuffers();
@@ -379,7 +407,12 @@ void myKeyboard(unsigned char key, int x, int y)
 
         case 'i':
         case 'I':
-            showIntersections = true;
+            showIntersections = !showIntersections;
+            break;
+
+        case 'm':
+        case 'M':
+            showMidPoints = !showMidPoints;
             break;
 
     }
