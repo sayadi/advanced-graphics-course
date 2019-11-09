@@ -8,8 +8,6 @@ add_executable(
 #    template.cpp
 #    hw1.cpp
     hw2.cpp
-#    perps.cpp
-#    segments.cpp
 )
 
 find_package(OpenGL REQUIRED)

@@ -19,7 +19,6 @@
 #include <vector>
 #include "vector.h"
 
-
 using namespace std;
 
 const int screenWidth = 640;
@@ -223,9 +222,9 @@ void drawIntersectionPoints()
     glPointSize(8);
     glColor3d(255, 215, 0);
     glBegin(GL_POINTS);
-    for (int i = 0; i < intersectionPoints.size(); i++)
+    for (auto & intersectionPoint : intersectionPoints)
     {
-        glVertex2d(intersectionPoints[i].x, intersectionPoints[i].y);
+        glVertex2d(intersectionPoint.x, intersectionPoint.y);
     }
     glEnd();
 }
