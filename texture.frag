@@ -45,6 +45,7 @@ void main()
 	if(bumpN)
 	{
 		//Calculate intensity using norm, instead of normN
+		intensity = clamp(dot(lDir, norm), 0.0, 1.0);
 	}
 	
 	vec3 Reflection = lDir - 2.0 * dot(lDir, normN) * normN;
@@ -55,25 +56,28 @@ void main()
 	if(textureEarth)
 	{
 		// set the final value to Earth
+		final = Earth;
 	}
 
 	if(diffuseLight)
 	{
 		// set the final value to 0.1 * Earth + 0.9 * intensity * Earth
+		final = (0.1 * Earth) + (0.9 * intensity) * Earth;
 	}
 
 	if(showClouds)
 	{
-		//Add the cloud texture to final
+		// Add the cloud texture to final
+		final+=Cloud;
 	}
 
 	float keTerm = pow(clamp(dot(Reflection, vDir), 0.0, 1.0), 50.0);
 	vec4 ksTerm = vec4(0.5, 0.5, 0.5, 0) * keTerm;
-	
 
-	if(highlight)
+	if (highlight)
 	{
-		//Add ksTerm multiplied to the Water texture
+		// Add ksTerm multiplied by the Water texture to final
+		final+=Water * ksTerm;
 	}
 
 	gl_FragColor = final;

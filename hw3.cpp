@@ -60,7 +60,8 @@ bool highlight = false;
 bool diffuseLight = false;
 bool textureEarth = false;
 
-bool drawLight = false, drawRays = false;
+bool drawLight = false;
+bool drawRays = false;
 bool drawTriangle = false;
 
 bool IntersectTriangle(
@@ -99,7 +100,7 @@ void drawSphere(double radius, double r, double g, double b)
 {
     glColor3d(r, g, b);
 
-    GLUquadricObj* sphere = NULL;
+    GLUquadricObj* sphere = nullptr;
     sphere = gluNewQuadric();
     gluQuadricDrawStyle(sphere, GLU_FILL);
     gluQuadricTexture(sphere, true);
@@ -476,7 +477,8 @@ void myDisplay(void)
         glEnd();
     }
 
-    Point I1, I2;
+    Point I1;
+    Point I2;
     Vector R;
     bool f = IntersectSphere(
             LightPos,
@@ -512,7 +514,14 @@ void myDisplay(void)
         glVertex3d(REnd.x, REnd.y, REnd.z);
         glEnd();
 
-        f = IntersectSphere(LightPos, CS, Point(0, 0, -20), 4, I1, I2, R);
+        f = IntersectSphere(
+                LightPos,
+                CS,
+                Point(0, 0, -20),
+                4,
+                I1,
+                I2,
+                R);
 
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
@@ -550,7 +559,14 @@ void myDisplay(void)
             glVertex3d(T3.x, T3.y, T3.z);
             glEnd();
 
-            didTriangleIntersect = IntersectTriangle(I1, R, T1, T2, T3, tI, tR);
+            didTriangleIntersect = IntersectTriangle(
+                    I1,
+                    R,
+                    T1,
+                    T2,
+                    T3,
+                    tI,
+                    tR);
 
             if (didTriangleIntersect)
             {
