@@ -110,11 +110,9 @@ void drawSphere(double radius, double r, double g, double b)
 
 #define printOpenGLError() printOglError(__FILE__, __LINE__)
 
+// Returns 1 if an OpenGL error occurred, 0 otherwise.
 int printOglError(char *file, int line)
 {
-    //
-    // Returns 1 if an OpenGL error occurred, 0 otherwise.
-    //
     GLenum glErr;
     int    retCode = 0;
 
@@ -127,7 +125,6 @@ int printOglError(char *file, int line)
     }
     return retCode;
 }
-
 
 void printShaderInfoLog(GLuint obj)
 {
@@ -328,7 +325,6 @@ Point get_3D_pos(int x, int y)
     return p;
 }
 
-//<<<<<<<<<<<<<<<<<<<<<<< myInit >>>>>>>>>>>>>>>>>>>>
 void myInit(void)
 {
     glClearColor(1.0, 1.0, 1.0, 0.0);       // set white background color
@@ -428,7 +424,7 @@ void myInit(void)
 
     cout << "Completed 100%" << endl;
 }
-//<<<<<<<<<<<<<<<<<<<<<<<< myDisplay >>>>>>>>>>>>>>>>>
+
 void myDisplay(void)
 {
 
@@ -482,8 +478,14 @@ void myDisplay(void)
 
     Point I1, I2;
     Vector R;
-
-    bool f = IntersectSphere(LightPos, CL, Point(0, 0, -20), 4, I1, I2, R);
+    bool f = IntersectSphere(
+            LightPos,
+            CL,
+           Point(0, 0, -20),
+           4,
+           I1,
+           I2,
+           R);
 
     if (drawRays && f)
     {
@@ -643,7 +645,7 @@ void myDisplay(void)
 
     glColor3f(0, 0, 1);
 
-    GLUquadricObj* sphere = NULL;
+    GLUquadricObj* sphere = nullptr;
     sphere = gluNewQuadric();
     gluQuadricDrawStyle(sphere, GLU_FILL);
     gluQuadricTexture(sphere, true);
@@ -653,7 +655,7 @@ void myDisplay(void)
 
     glutSwapBuffers();
 
-    glFlush();                 // send all output to display
+    glFlush();
 }
 
 void myResize(int resizeWidth, int resizeHeight)
@@ -666,42 +668,42 @@ void myKeyboard(unsigned char key, int x, int y)
     if (key == 'w')
         angleX -= 5;
 
-    if (key == 's')
+    else if (key == 's')
         angleX += 5;
 
-    if (key == 'a')
+    else if (key == 'a')
         angleY -= 5;
 
-    if (key == 'd')
+    else if (key == 'd')
         angleY += 5;
 
-    if (key == 'q')
+    else if (key == 'q')
         angleZ -= 5;
 
-    if (key == 'e')
+    else if (key == 'e')
         angleZ += 5;
 
-    if (key == 'n')
+    else if (key == 'n')
     {
         animateClouds = !animateClouds;
     }
 
-    if (key == 'b')
+    else if (key == 'b')
     {
         bumpN = !bumpN;
     }
 
-    if (key == 'h')
+    else if (key == 'h')
     {
         highlight = !highlight;
     }
 
-    if (key == 'f')
+    else if (key == 'f')
     {
         diffuseLight = !diffuseLight;
     }
 
-    if (key == 'l')
+    else if (key == 'l')
     {
         drawLight = !drawLight;
 
@@ -711,14 +713,14 @@ void myKeyboard(unsigned char key, int x, int y)
         }
     }
 
-    if (key == 'r' && drawLight)
+    else if (key == 'r' && drawLight)
     {
         drawRays = !drawRays;
         if (!drawRays)
             drawTriangle = false;
     }
 
-    if (key == 'g')
+    else if (key == 'g')
     {
         drawTriangle = !drawTriangle;
 
@@ -727,42 +729,42 @@ void myKeyboard(unsigned char key, int x, int y)
     }
 
 
-    if (key == 't')
+    else if (key == 't')
     {
         textureEarth = !textureEarth;
     }
 
-    if (key == 'c')
+    else if (key == 'c')
     {
         showClouds = !showClouds;
     }
 
-    if (key == '1')
+    else if (key == '1')
     {
         lPos[0] -= 0.1f;
     }
 
-    if (key == '2')
+    else if (key == '2')
     {
         lPos[0] += 0.1f;
     }
 
-    if (key == '3')
+    else if (key == '3')
     {
         lPos[1] -= 0.1f;
     }
 
-    if (key == '4')
+    else if (key == '4')
     {
         lPos[1] += 0.1f;
     }
 
-    if (key == '5')
+    else if (key == '5')
     {
         lPos[2] -= 0.1f;
     }
 
-    if (key == '6')
+    else if (key == '6')
     {
         lPos[2] += 0.1f;
     }
@@ -780,23 +782,20 @@ void myMouse(int button, int state, int x, int y)
     glutPostRedisplay();
 }
 
-//<<<<<<<<<<<<<<<<<<<<<<<< main >>>>>>>>>>>>>>>>>>>>>>
 int main(int argc, char** argv)
 {
-    glutInit(&argc, argv);          // initialize the toolkit
+    glutInit(&argc, argv);
     //glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_MULTISAMPLE); // set display mode
 
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE);
 
-
-
-    glutInitWindowSize(screenWidth, screenHeight);     // set window size
-    glutInitWindowPosition(100, 100); // set window position on screen
-    glutCreateWindow("My Graphics App"); // open the screen window
+    glutInitWindowSize(screenWidth, screenHeight);
+    glutInitWindowPosition(100, 100);
+    glutCreateWindow("Mohamed Al Sayadi - Assignment 3");
 
     glEnable(GL_DEPTH_TEST);
 
-    glutDisplayFunc(myDisplay);     // register redraw function
+    glutDisplayFunc(myDisplay);
 
 
     glutReshapeFunc(myResize);
@@ -808,8 +807,11 @@ int main(int argc, char** argv)
 
     glewInit();
     if (glewIsSupported("GL_VERSION_2_0"))
+    {
         printf("Ready for OpenGL 2.0\n");
-    else {
+    }
+    else
+    {
         printf("OpenGL 2.0 not supported\n");
         exit(1);
     }
@@ -819,7 +821,7 @@ int main(int argc, char** argv)
 
     glUseProgram(glslProgram_texture);
 
-    glutMainLoop();      // go into a perpetual loop
+    glutMainLoop();
 
     return 0;
 }
