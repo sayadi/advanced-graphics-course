@@ -36,26 +36,41 @@ double translateX = 0, translateY = 0, oldTx, oldTy;
 float* depth;
 
 // Shader variables
-
-GLuint vShader_01, fShader_01, glslProgram_color, vShader_03, fShader_03, glslProgram_texture;
+GLuint vShader_01;
+GLuint fShader_01;
+GLuint glslProgram_color;
+GLuint vShader_03;
+GLuint fShader_03;
+GLuint glslProgram_texture;
 
 //Texture variables
-
-unsigned char* image = 0;
-GLuint		texture[4];
-int image_w, image_h;
+unsigned char* image = nullptr;
+GLuint texture[4];
+int image_w;
+int image_h;
 
 GLfloat aTime = 0.0f;
 float lPos[3] = { -6, 4, -17 };
 double triPos[3] = { -3.2, -1.2, -12.8 };
 
-bool showClouds = false, animateClouds = false, bumpN = false, highlight = false, diffuseLight = false;
+bool showClouds = false;
+bool animateClouds = false;
+bool bumpN = false;
+bool highlight = false;
+bool diffuseLight = false;
 bool textureEarth = false;
 
 bool drawLight = false, drawRays = false;
 bool drawTriangle = false;
 
-bool IntersectTriangle(const Point& RayStart, const Vector& RayDir, const Point& T1, const Point& T2, const Point& T3, Point& I, Vector& R)
+bool IntersectTriangle(
+        const Point& RayStart,
+        const Vector& RayDir,
+        const Point& T1,
+        const Point& T2,
+        const Point& T3,
+        Point& I,
+        Vector& R)
 {
     //Implement the function. Find the intersection point with the plane.
     //Calculate the reflection vector only using the nearest intersection point.
@@ -64,8 +79,14 @@ bool IntersectTriangle(const Point& RayStart, const Vector& RayDir, const Point&
     return false;
 }
 
-bool IntersectSphere(const Point& RayStart, const Vector& RayDir, const Point &Center, const double &Radius,
-                     Point& I1, Point& I2, Vector& R)
+bool IntersectSphere(
+        const Point& RayStart,
+        const Vector& RayDir,
+        const Point &Center,
+        const double &Radius,
+        Point& I1,
+        Point& I2,
+        Vector& R)
 {
     //Implement the function. Find the two intersection points.
     //Calculate the reflection vector only using the nearest intersection point.
@@ -110,16 +131,16 @@ int printOglError(char *file, int line)
 
 void printShaderInfoLog(GLuint obj)
 {
-    int infologLength = 0;
+    int infoLogLength = 0;
     int charsWritten = 0;
     char *infoLog;
 
-    glGetShaderiv(obj, GL_INFO_LOG_LENGTH, &infologLength);
+    glGetShaderiv(obj, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-    if (infologLength > 0)
+    if (infoLogLength > 0)
     {
-        infoLog = (char *)malloc(infologLength);
-        glGetShaderInfoLog(obj, infologLength, &charsWritten, infoLog);
+        infoLog = (char *)malloc(infoLogLength);
+        glGetShaderInfoLog(obj, infoLogLength, &charsWritten, infoLog);
         printf("%s\n", infoLog);
         free(infoLog);
     }
@@ -127,26 +148,29 @@ void printShaderInfoLog(GLuint obj)
 
 void printProgramInfoLog(GLuint obj)
 {
-    int infologLength = 0;
+    int infoLogLength = 0;
     int charsWritten = 0;
     char *infoLog;
 
-    glGetProgramiv(obj, GL_INFO_LOG_LENGTH, &infologLength);
+    glGetProgramiv(obj, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-    if (infologLength > 0)
+    if (infoLogLength > 0)
     {
-        infoLog = (char *)malloc(infologLength);
-        glGetProgramInfoLog(obj, infologLength, &charsWritten, infoLog);
+        infoLog = (char *)malloc(infoLogLength);
+        glGetProgramInfoLog(obj, infoLogLength, &charsWritten, infoLog);
         printf("%s\n", infoLog);
         free(infoLog);
     }
 }
 
-
-
-GLuint setShaders(string vFile, string fFile, GLuint &vShader, GLuint &fShader) {
-
-    char *vs = NULL, *fs = NULL;
+GLuint setShaders(
+        string vFile,
+        string fFile,
+        GLuint &vShader,
+        GLuint &fShader)
+{
+    char *vs = nullptr;
+    char *fs = nullptr;
 
     vShader = glCreateShader(GL_VERTEX_SHADER);
     fShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -157,8 +181,8 @@ GLuint setShaders(string vFile, string fFile, GLuint &vShader, GLuint &fShader) 
     const char * vv = vs;
     const char * ff = fs;
 
-    glShaderSource(vShader, 1, &vv, NULL);
-    glShaderSource(fShader, 1, &ff, NULL);
+    glShaderSource(vShader, 1, &vv, nullptr);
+    glShaderSource(fShader, 1, &ff, nullptr);
 
     free(vs); free(fs);
 
@@ -178,50 +202,65 @@ GLuint setShaders(string vFile, string fFile, GLuint &vShader, GLuint &fShader) 
     return pID;
 }
 
-
-//Read an 8 bit PPM file
-unsigned char* readPPM(const char *filename, bool flag, int &dimx, int& dimy) {
-    FILE          *ppmfile;
-    char          line[256];
-    int           i, pixels, x, y, r, g, b;
+// Read an 8 bit PPM file
+unsigned char* readPPM(
+        const char *filename,
+        bool flag,
+        int &dimx,
+        int& dimy)
+{
+    FILE *ppmFile;
+    char line[256];
+    int i;
+    int pixels;
+    int x;
+    int y;
+    int r;
+    int g;
+    int b;
     unsigned char* p;
     unsigned char* f;
 
-    if ((ppmfile = fopen(filename, "rb")) == NULL) {
+    if ((ppmFile = fopen(filename, "rb")) == nullptr)
+    {
         printf("can't open %s\n", filename);
         exit(1);
     }
 
-    fgets(line, 255, ppmfile);
-    fgets(line, 255, ppmfile);
-    while (line[0] == '#' || line[0] == '\n') fgets(line, 255, ppmfile);
+    fgets(line, 255, ppmFile);
+    fgets(line, 255, ppmFile);
+    while (line[0] == '#' || line[0] == '\n') fgets(line, 255, ppmFile);
     sscanf(line, "%d %d", &dimx, &dimy);
-    fgets(line, 255, ppmfile);
+    fgets(line, 255, ppmFile);
 
     pixels = dimx * dimy;
     p = (unsigned char *)calloc(3 * pixels, sizeof(unsigned char));
     f = (unsigned char *)calloc(3 * pixels, sizeof(unsigned char));
     // 3 * pixels because of R, G and B channels
     i = 0;
-    for (y = 0; y < dimy; y++) {
-        for (x = 0; x < dimx; x++) {
+    for (y = 0; y < dimy; y++)
+    {
+        for (x = 0; x < dimx; x++)
+        {
             i = 3 * x + y * (3 * dimx);
-            r = getc(ppmfile);
+            r = getc(ppmFile);
             p[i] = r;
-            g = getc(ppmfile);
+            g = getc(ppmFile);
             p[i + 1] = g;
-            b = getc(ppmfile);
+            b = getc(ppmFile);
             p[i + 2] = b;
         }
     }
-    fclose(ppmfile);
+    fclose(ppmFile);
 
     unsigned char *ptr1, *ptr2;
 
     ptr1 = p;
     ptr2 = f + 3 * dimx * (dimy - 1);
-    for (y = 0; y < dimy; y++) {
-        for (x = 0; x < dimx * 3; x++) {
+    for (y = 0; y < dimy; y++)
+    {
+        for (x = 0; x < dimx * 3; x++)
+        {
             *ptr2 = *ptr1;
             ptr1++;
             ptr2++;
@@ -229,18 +268,18 @@ unsigned char* readPPM(const char *filename, bool flag, int &dimx, int& dimy) {
         ptr2 -= (2 * 3 * dimx);
     }
 
-    if (!flag) {
+    if (!flag)
+    {
         free(p);
         p = 0;
         return(f);
     }
-    else {
+    else
+    {
         free(f);
         f = 0;
         return(p);
     }
-
-    return 0;
 }
 
 Point get_3D_pos(int x, int y)
@@ -321,8 +360,9 @@ void myInit(void)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image_w, image_h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 
     if (image)
+    {
         free(image);
-
+    }
     image = 0;
 
     cout << "Completed 25%" << endl;
@@ -340,13 +380,13 @@ void myInit(void)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image_w, image_h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 
     if (image)
+    {
         free(image);
-
+    }
     image = 0;
 
     cout << "Completed 50%" << endl;
     cout << "Loading Clouds.ppm" << endl;
-
 
     // Load and setup the texture 03
     image = readPPM("/Users/msayadi/Fall-2019/Advanced_Computer_Graphics/advanced-graphics-course/Clouds.ppm", false, image_w, image_h);
@@ -360,8 +400,9 @@ void myInit(void)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image_w, image_h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 
     if (image)
+    {
         free(image);
-
+    }
     image = 0;
 
     cout << "Completed 75%" << endl;
@@ -379,7 +420,9 @@ void myInit(void)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image_w, image_h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 
     if (image)
+    {
         free(image);
+    }
 
     image = 0;
 
@@ -402,7 +445,9 @@ void myDisplay(void)
 
     glTranslated(lPos[0], lPos[1], lPos[2]);
     if (drawLight)
+    {
         drawSphere(0.2, 1, 1, 0);
+    }
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -440,7 +485,7 @@ void myDisplay(void)
 
     bool f = IntersectSphere(LightPos, CL, Point(0, 0, -20), 4, I1, I2, R);
 
-    if (drawRays && f == true)
+    if (drawRays && f)
     {
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
@@ -464,7 +509,6 @@ void myDisplay(void)
         glVertex3d(I1.x, I1.y, I1.z);
         glVertex3d(REnd.x, REnd.y, REnd.z);
         glEnd();
-
 
         f = IntersectSphere(LightPos, CS, Point(0, 0, -20), 4, I1, I2, R);
 
@@ -517,7 +561,6 @@ void myDisplay(void)
                 REnd = tI;
             }
         }
-
 
         glColor3f(0, 0, 0);
         glBegin(GL_LINES);
