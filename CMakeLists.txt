@@ -9,7 +9,8 @@ add_executable(
 #    hw1.cpp
 #    hw2.cpp
     textfile.cpp
-    hw3.cpp
+#    hw3.cpp
+     hw4.cpp
 )
 
 find_package(OpenGL REQUIRED)
