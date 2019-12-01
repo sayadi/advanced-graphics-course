@@ -2,7 +2,6 @@ uniform vec3 lPos;
 varying vec3 vPosition;
 varying vec3 vNormal;
 
-
 void main()
 {
 	vec3 normal = normalize(vNormal);

@@ -17,7 +17,6 @@
 #endif
 
 #include <iostream>
-#include <cmath>
 #include <vector>
 #include <fstream>
 
@@ -49,11 +48,11 @@ GLuint texture[4];
 int image_w;
 int image_h;
 
-GLfloat aTime = 0.0f;
 float lPos[3] = { -6, 4, -17 };
 double triPos[3] = { -3.2, -1.2, -12.8 };
 
 bool showClouds = false;
+float offset = 0.001;
 bool animateClouds = false;
 bool bumpN = false;
 bool highlight = false;
@@ -649,6 +648,17 @@ void myDisplay(void)
 
     loc = glGetUniformLocation(glslProgram_texture, "animateClouds");
     glUniform1i(loc, animateClouds);
+
+    if (animateClouds)
+    {
+        offset+=0.0001;
+        if (offset > 1)
+        {
+            offset = 0.0001;
+        }
+    }
+    loc = glGetUniformLocation(glslProgram_texture, "offset");
+    glUniform1f(loc, offset);
 
     loc = glGetUniformLocation(glslProgram_texture, "bumpN");
     glUniform1f(loc, bumpN);
