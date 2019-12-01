@@ -15,6 +15,8 @@ uniform bool bumpN;
 
 uniform bool highlight;
 
+uniform bool animateClouds;
+
 uniform bool diffuseLight;
 
 uniform bool textureEarth;
@@ -42,30 +44,35 @@ void main()
 	
 	intensity = clamp(dot(lDir, normN), 0.0, 1.0);
 
-	if(bumpN)
+	if (bumpN)
 	{
-		//Calculate intensity using norm, instead of normN
+		// Calculate intensity using norm, instead of normN
 		intensity = clamp(dot(lDir, norm), 0.0, 1.0);
 	}
 	
 	vec3 Reflection = lDir - 2.0 * dot(lDir, normN) * normN;
 	Reflection = -normalize(Reflection);
 
-	vec4 final = gl_Color * intensity;;
+	vec4 final = gl_Color * intensity;
 
-	if(textureEarth)
+	if (textureEarth)
 	{
-		// set the final value to Earth
+		// Set the final value to Earth
 		final = Earth;
 	}
 
-	if(diffuseLight)
+	if (diffuseLight)
 	{
-		// set the final value to 0.1 * Earth + 0.9 * intensity * Earth
+		// Set the final value to 0.1 * Earth + 0.9 * intensity * Earth
 		final = (0.1 * Earth) + (0.9 * intensity) * Earth;
 	}
 
-	if(showClouds)
+	if (animateClouds)
+	{
+		Cloud = Cloud + vec4(0.1, 0.0, 0.0, 0.0);
+	}
+
+	if (showClouds)
 	{
 		// Add the cloud texture to final
 		final+=Cloud;

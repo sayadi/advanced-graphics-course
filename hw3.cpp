@@ -647,6 +647,9 @@ void myDisplay(void)
     loc = glGetUniformLocation(glslProgram_texture, "showClouds");
     glUniform1i(loc, showClouds);
 
+    loc = glGetUniformLocation(glslProgram_texture, "animateClouds");
+    glUniform1i(loc, animateClouds);
+
     loc = glGetUniformLocation(glslProgram_texture, "bumpN");
     glUniform1f(loc, bumpN);
 
