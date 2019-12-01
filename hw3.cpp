@@ -843,7 +843,7 @@ int main(int argc, char** argv)
     }
 
     glslProgram_color = setShaders("/Users/msayadi/Fall-2019/Advanced_Computer_Graphics/advanced-graphics-course/color.vert", "/Users/msayadi/Fall-2019/Advanced_Computer_Graphics/advanced-graphics-course/color.frag", vShader_01, fShader_01);
-    glslProgram_texture = setShaders("/Users/msayadi/Fall-2019/Advanced_Computer_Graphics/advanced-graphics-course/texture.vert", "/Users/msayadi/Fall-2019/Advanced_Computer_Graphics/advanced-graphics-course/texture.frag", vShader_03, fShader_03);
+    glslProgram_texture = setShaders("/Users/msayadi/Fall-2019/Advanced_Computer_Graphics/advanced-graphics-course/texture.vert", "/Users/msayadi/Fall-2019/Advanced_Computer_Graphics/advanced-graphics-course/hw3.frag", vShader_03, fShader_03);
 
     glUseProgram(glslProgram_texture);
 
