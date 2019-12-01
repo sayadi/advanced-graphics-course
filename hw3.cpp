@@ -52,7 +52,7 @@ float lPos[3] = { -6, 4, -17 };
 double triPos[3] = { -3.2, -1.2, -12.8 };
 
 bool showClouds = false;
-float offset = 0.001;
+float offset = 0.0;
 bool animateClouds = false;
 bool bumpN = false;
 bool highlight = false;
@@ -645,9 +645,6 @@ void myDisplay(void)
 
     loc = glGetUniformLocation(glslProgram_texture, "showClouds");
     glUniform1i(loc, showClouds);
-
-    loc = glGetUniformLocation(glslProgram_texture, "animateClouds");
-    glUniform1i(loc, animateClouds);
 
     if (animateClouds)
     {

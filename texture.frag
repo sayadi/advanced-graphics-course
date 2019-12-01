@@ -11,7 +11,6 @@ varying vec4 myNorm;
 uniform bool showClouds;
 uniform bool bumpN;
 uniform bool highlight;
-uniform bool animateClouds;
 uniform bool diffuseLight;
 uniform bool textureEarth;
 
@@ -21,7 +20,7 @@ void main()
 {
 	vec4 Earth = texture2D(tex0, gl_TexCoord[0].st);
 	vec4 Normal = texture2D(tex1, gl_TexCoord[0].st);
-	vec4 Cloud = texture2D(tex2, gl_TexCoord[0].st);
+	vec4 Cloud;
 	vec4 Water = texture2D(tex3, gl_TexCoord[0].st);
 
 	vec3 vPos = vec3(myPos.x, myPos.y, myPos.z);
@@ -63,23 +62,14 @@ void main()
 		final = (0.1 * Earth) + (0.9 * intensity) * Earth;
 	}
 
-	if (animateClouds)
+	if (showClouds)
 	{
+		// Add the cloud texture to final
 		vec2 newTexCoord;
 		newTexCoord.s = gl_TexCoord[0].s + offset;
 		newTexCoord.t = gl_TexCoord[0].t;
 
 		Cloud = texture2D(tex2, newTexCoord);
-	}
-
-	if (showClouds)
-	{
-		// Add the cloud texture to final
-//		vec2 newTexCoord;
-//		newTexCoord.s = gl_TexCoord[0].s;
-//		newTexCoord.t = gl_TexCoord[0].t;
-//
-//		Cloud = texture2D(tex2, newTexCoord);
 		final+=Cloud;
 	}
 
