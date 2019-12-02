@@ -63,6 +63,41 @@ bool drawLight = false;
 bool drawRays = false;
 bool drawTriangle = false;
 
+double sign (Point p1, Point p2, Point p3)
+{
+    return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+}
+bool PointInTriangle(Point pt, Point v1, Point v2, Point v3)
+{
+    double d1, d2, d3;
+    bool has_neg, has_pos;
+
+    d1 = sign(pt, v1, v2);
+    d2 = sign(pt, v2, v3);
+    d3 = sign(pt, v3, v1);
+
+    has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+    has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+    return !(has_neg && has_pos);
+}
+
+bool PointInTriangleSt(
+        Point p,
+        Point p0,
+        Point p1,
+        Point p2)
+{
+    double Area = 0.5 *(-p1.y*p2.x + p0.y*(-p1.x + p2.x) + p0.x*(p1.y - p2.y) + p1.x*p2.y);
+
+    double s = 1/(2*Area)*(p0.y*p2.x - p0.x*p2.y + (p2.y - p0.y)*p.x + (p0.x - p2.x)*p.y);
+    double t = 1/(2*Area)*(p0.x*p1.y - p0.y*p1.x + (p0.y - p1.y)*p.x + (p1.x - p0.x)*p.y);
+    double st = 1 - s - t;
+
+    return s > 0 && t > 0 && st > 0;
+
+}
+
 bool IntersectTriangle(
         const Point& RayStart,
         const Vector& RayDir,
@@ -76,7 +111,52 @@ bool IntersectTriangle(
     // Calculate the reflection vector only using the nearest intersection point.
     // Return true if the intersection point is inside the triangle.
 
-    return false;
+    Vector normal = (T1 - T2) * (T1 - T3);
+
+    /*
+     * The plane can be represented by the equation:
+     * (p - T1) * normal = 0
+     * And the ray can be represented by the equation:
+     * RayStart + (t * RayDir)
+     * Substituting the ray equation in the plane's:
+     * RayStart + (t * RayDir) - T1) * normal = 0
+     * Solving this equation for t:
+     * t = (T1 - RayStart) * normal / (RayDir * normal)
+    */
+
+    double denominator = RayDir % normal;
+
+    // The ray does not intersect the plane when the denominator
+    // is zero (or in decimal world; close to zero)
+    if (denominator < 1e-6)
+    {
+        return false;
+    }
+    else
+    {
+        double numerator = (T1 - RayStart) % normal;
+
+        double t = numerator / denominator;
+
+        if (t < 0)
+        {
+            return false;
+        }
+        else
+        {
+            Point p = RayStart + (t * RayDir);
+            if (!PointInTriangleSt(p, T1, T2, T3))
+            {
+                return false;
+            }
+            else
+            {
+                I = p;
+                R = RayDir - 2 * (RayDir % normal) * normal;
+                return true;
+            }
+        }
+    }
 }
 
 bool SolveQuadraticEquation(
@@ -104,8 +184,8 @@ bool SolveQuadraticEquation(
 bool IntersectSphere(
         const Point& RayStart,
         const Vector& RayDir,
-        const Point &Center,
-        const double &Radius,
+        const Point& Center,
+        const double& Radius,
         Point& I1,
         Point& I2,
         Vector& R)
@@ -162,10 +242,10 @@ bool IntersectSphere(
         I2 = RayStart + (t2 * RayDir);
 
         R = (I1 - Center);
-        printf("R = (%f, %f, %f)\n", R.x, R.y, R.z);
+//        printf("R = (%f, %f, %f)\n", R.x, R.y, R.z);
 
         R = normalize(R);
-        printf("R normalized = (%f, %f, %f)\n", R.x, R.y, R.z);
+//        printf("R normalized = (%f, %f, %f)\n", R.x, R.y, R.z);
 
         return true;
     }
