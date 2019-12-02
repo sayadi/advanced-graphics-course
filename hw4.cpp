@@ -72,11 +72,33 @@ bool IntersectTriangle(
         Point& I,
         Vector& R)
 {
-    //Implement the function. Find the intersection point with the plane.
-    //Calculate the reflection vector only using the nearest intersection point.
-    //Return true if the intersection point is inside the triangle.
+    // Implement the function. Find the intersection point with the plane.
+    // Calculate the reflection vector only using the nearest intersection point.
+    // Return true if the intersection point is inside the triangle.
 
     return false;
+}
+
+bool SolveQuadraticEquation(
+        double a,
+        double b,
+        double c,
+        double &x1,
+        double &x2)
+
+{
+    double det = pow(b, 2) - (4 * a * c);
+    if (det < 0)
+    {
+        return false;
+    }
+    else
+    {
+        double detSqrt = sqrt(det);
+        x1 = (-b + detSqrt) / (2 * a);
+        x2 = (-b - detSqrt) / (2 * a);
+        return true;
+    }
 }
 
 bool IntersectSphere(
@@ -88,11 +110,65 @@ bool IntersectSphere(
         Point& I2,
         Vector& R)
 {
-    //Implement the function. Find the two intersection points.
-    //Calculate the reflection vector only using the nearest intersection point.
-    //Return true if the intersections are found.
+    // Implement the function. Find the two intersection points.
+    // Calculate the reflection vector only using the nearest intersection point.
+    // Return true if the intersections are found.
 
-    return false;
+    /*
+     * Starting from the Ray equation:
+     * RayDir * t + RayStart = 0 and
+     * the sphere's equation:
+     * Center^2 - Radius^2 = 0
+     * The intersection equation can be written as:
+     * [(RayDir * t + RayStart) - (Center)]^2 - Radius^2 = 0 or:
+     * (RayDir)^2 * t^2 + (2 * RayDir * (RayStart - Center) * t + (RayStart - Center)^2 - R^2 = 0 of the form:
+     *      a     * x^2 +                 b                 * x +           c                 = 0
+     */
+
+    Vector rayStartTransformationVector = RayStart - Center;
+    double a = RayDir % RayDir;
+    double b = 2 * RayDir % rayStartTransformationVector;
+    double c = (rayStartTransformationVector % rayStartTransformationVector) - pow(Radius, 2);
+
+    double t1;
+    double t2;
+    bool equationResult = SolveQuadraticEquation(a, b, c, t1, t2);
+    if (!equationResult)
+    {
+        cout << "The ray does not intersect with the sphere." << endl;
+        return false;
+    }
+    else
+    {
+        if (t1 < 0 && t2 < 0)
+        {
+            return false;
+        }
+
+        // Make sure t1 is smaller
+        if (t1 > t2)
+        {
+            swap(t1, t2);
+        }
+
+        // Discard the negative value if exists
+        if (t1 < 0)
+        {
+            swap(t1, t2);
+        }
+
+        // Find the intersection points
+        I1 = RayStart + (t1 * RayDir);
+        I2 = RayStart + (t2 * RayDir);
+
+        R = (I1 - Center);
+        printf("R = (%f, %f, %f)\n", R.x, R.y, R.z);
+
+        R = normalize(R);
+        printf("R normalized = (%f, %f, %f)\n", R.x, R.y, R.z);
+
+        return true;
+    }
 }
 
 void drawSphere(double radius, double r, double g, double b)

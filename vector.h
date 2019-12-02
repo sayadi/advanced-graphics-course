@@ -201,7 +201,10 @@ Vector normalize(const Vector& v)
 	double n = v.norm();
 
 	if( n == 0 )
+    {
+	    printf("n = 0\n");
 		return unit;
+    }
 
 	unit = v / n;
 
