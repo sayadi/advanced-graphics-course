@@ -112,6 +112,7 @@ bool IntersectTriangle(
     // Return true if the intersection point is inside the triangle.
 
     Vector normal = (T1 - T2) * (T1 - T3);
+    normal = normalize(normal);
 
     /*
      * The plane can be represented by the equation:
@@ -153,6 +154,7 @@ bool IntersectTriangle(
             {
                 I = p;
                 R = RayDir - 2 * (RayDir % normal) * normal;
+                R = normalize(R);
                 return true;
             }
         }
@@ -241,11 +243,10 @@ bool IntersectSphere(
         I1 = RayStart + (t1 * RayDir);
         I2 = RayStart + (t2 * RayDir);
 
-        R = (I1 - Center);
-//        printf("R = (%f, %f, %f)\n", R.x, R.y, R.z);
-
+        Vector N = (I1 - Center);
+        N = normalize(N);
+        R = RayDir - (2 * (RayDir % N) * N);
         R = normalize(R);
-//        printf("R normalized = (%f, %f, %f)\n", R.x, R.y, R.z);
 
         return true;
     }
