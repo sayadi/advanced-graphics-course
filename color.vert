@@ -1,6 +1,6 @@
 varying vec4 myNorm;
 
-void main() 
+void main()
 {
 	vec4 n = vec4(gl_Normal.x, gl_Normal.y, gl_Normal.z, 0);
 	myNorm = gl_ModelViewMatrixInverseTranspose * n;
