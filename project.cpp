@@ -54,12 +54,43 @@ int image_h;
 
 float lPos[3] = { -6, 4, -17 };
 
+// Earth variables
+double earthR = 4.0;
+double earthX = -3.0;
+double earthY = 0.0;
+double earthZ = 0.0;
+bool selectEarth = true;
+
 // Mars variables
+double marsR = 2.7;
+double marsX = 4.1;
+double marsY = 0.0;
+double marsZ = 0.0;
 bool showMars = false;
+bool selectMars = false;
 
 // Flag variables
 bool showFlag = false;
+bool animateFlag = false;
+double offset = 0.0;
+int counter = 0;
+Point p1 = Point(3.0, 4.0, 0);
+Point p2 = Point(3.0, 6.0, 0);
+Point p3 = Point(6.0, 6.0, 0);
+Point p4 = Point(6.0, 4.0, 0);
 
+bool spheresIntersection(Point c1, double r1, Point c2, double r2, Point* center, Vector* normal) {
+    double length = (c1 - c2).norm();
+    if (length > r1 + r2) return false;
+    double side1 = length - r1;
+    double side2 = length - r2;
+    double middle = length - side1 - side2;
+    Vector tempVec = (c1 - c2) / length;
+    Point tempPnt = c1 + (tempVec * (side1 + middle / 2));
+    normal = &tempVec;
+    center = &tempPnt;
+    return true;
+}
 #define printOpenGLError() printOglError(__FILE__, __LINE__)
 // Returns 1 if an OpenGL error occurred, 0 otherwise.
 int printOglError(char *file, int line)
@@ -371,13 +402,13 @@ void myDisplay(void)
 
     // Draw earth
     glPushMatrix ();
-        glTranslatef    (-3, 0.0, 0.0);
+        glTranslatef(earthX, earthY, earthZ);
         GLUquadricObj* earth = nullptr;
         earth = gluNewQuadric();
         gluQuadricDrawStyle(earth, GLU_FILL);
         gluQuadricTexture(earth, true);
         gluQuadricNormals(earth, GLU_SMOOTH);
-        gluSphere(earth, 4.0, 80, 80);
+        gluSphere(earth, earthR, 80, 80);
         gluDeleteQuadric(earth);
     glPopMatrix ();
 
@@ -390,18 +421,37 @@ void myDisplay(void)
     if (showMars)
     {
         glPushMatrix ();
-        glTranslatef(4.1, 0.0, 0.0);
+        glTranslatef(marsX, marsY, marsZ);
         GLUquadricObj* mars = nullptr;
         mars = gluNewQuadric();
         gluQuadricDrawStyle(mars, GLU_FILL);
         gluQuadricTexture(mars, true);
         gluQuadricNormals(mars, GLU_SMOOTH);
-        gluSphere(mars, 2.7, 80, 80);
+        gluSphere(mars, marsR, 80, 80);
         gluDeleteQuadric(mars);
         glPopMatrix();
 
         if (showFlag)
         {
+            double p1x = p1.x + offset;
+            double p1y = p1.y;
+            double p1z = p1.z;
+            p1 = Point(p1x, p1y, p1z);
+
+            double p2x = p2.x + offset;
+            double p2y = p2.y;
+            double p2z = p2.z;
+            p2 = Point(p2x, p2y, p2z);
+
+            double p3x = p3.x + offset;
+            double p3y = p3.y;
+            double p3z = p3.z;
+            p3 = Point(p3x, p3y, p3z);
+
+            double p4x = p4.x + offset;
+            double p4y = p4.y;
+            double p4z = p4.z;
+            p4 = Point(p4x, p4y, p4z);
             // Draw flag handler
             loc = glGetUniformLocation(glslProgram_texture, "textureBlack");
             glUniform1f(loc, 0);
@@ -424,13 +474,15 @@ void myDisplay(void)
             // Draw flag
             glPushMatrix ();
             glBegin(GL_QUADS);
-            glTexCoord2f(0, 0); glVertex3f(3.0, 4.0, 0);
-            glTexCoord2f(0, 1); glVertex3f(3.0, 6.0, 0);
-            glTexCoord2f(1, 1); glVertex3f(6.0, 6.0, 0);
-            glTexCoord2f(1, 0); glVertex3f(6.0, 4.0, 0);
+            glTexCoord2f(0, 0); glVertex3f(p1.x, p1.y, p1.z);
+            glTexCoord2f(0, 1); glVertex3f(p2.x, p2.y, p2.z);
+            glTexCoord2f(1, 1); glVertex3f(p3.x, p3.y, p3.z);
+            glTexCoord2f(1, 0); glVertex3f(p4.x, p4.y, p4.z);
             glEnd();
             glPopMatrix ();
         }
+
+
     }
 
     glutSwapBuffers();
@@ -498,9 +550,100 @@ void myKeyboard(unsigned char key, int x, int y)
         showMars = !showMars;
     }
 
-    else if (key == 'c')
+    else if (key == 'f')
     {
         showFlag = !showFlag;
+    }
+
+    else if (key == 'p')
+    {
+        animateFlag = !animateFlag;
+    }
+
+    // Select earth and disable mars
+    else if (key == 'z')
+    {
+        selectEarth = true;
+        selectMars = false;
+    }
+
+    // Select mars and disable earth
+    else if (key == 'x')
+    {
+        selectMars = true;
+        selectEarth = false;
+    }
+
+    else if (key == 'j')
+    {
+        if (selectEarth)
+        {
+            earthX -= 0.1f;
+        }
+        else if (selectMars)
+        {
+            marsX -= 0.1f;
+        }
+    }
+
+    else if (key == 'l')
+    {
+        if (selectEarth)
+        {
+            earthX += 0.1f;
+        }
+        else if (selectMars)
+        {
+            marsX += 0.1f;
+        }
+    }
+
+    else if (key == 'i')
+    {
+        if (selectEarth)
+        {
+            earthY += 0.1f;
+        }
+        else if (selectMars)
+        {
+            marsY += 0.1f;
+        }
+    }
+
+    else if (key == 'k')
+    {
+        if (selectEarth)
+        {
+            earthY -= 0.1f;
+        }
+        else if (selectMars)
+        {
+            marsY -= 0.1f;
+        }
+    }
+
+    else if (key == 'u')
+    {
+        if (selectEarth)
+        {
+            earthZ -= 0.1f;
+        }
+        else if (selectMars)
+        {
+            marsZ -= 0.1f;
+        }
+    }
+
+    else if (key == 'o')
+    {
+        if (selectEarth)
+        {
+            earthZ += 0.1f;
+        }
+        else if (selectMars)
+        {
+            marsZ += 0.1f;
+        }
     }
 
     glutPostRedisplay();
