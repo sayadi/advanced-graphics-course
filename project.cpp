@@ -46,13 +46,19 @@ GLuint vShader_03;
 GLuint fShader_03;
 GLuint glslProgram_texture;
 
-//Texture variables
+// Texture variables
 unsigned char* image = nullptr;
 GLuint texture[5];
 int image_w;
 int image_h;
 
 float lPos[3] = { -6, 4, -17 };
+
+// Mars variables
+bool showMars = false;
+
+// Flag variables
+bool showFlag = false;
 
 #define printOpenGLError() printOglError(__FILE__, __LINE__)
 // Returns 1 if an OpenGL error occurred, 0 otherwise.
@@ -266,7 +272,27 @@ void myInit(void)
     string marsFilename = path + "Mars.ppm";
     image = readPPM(marsFilename.c_str(), false, image_w, image_h);
 
-    glBindTexture(GL_TEXTURE_2D, texture[4]);
+    glBindTexture(GL_TEXTURE_2D, texture[1]);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image_w, image_h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+
+    if (image)
+    {
+        free(image);
+    }
+
+    image = 0;
+
+    cout << "Loading flag.ppm" << endl;
+    // Load and setup the texture 05
+    string flagFilename = path + "flag.ppm";
+    image = readPPM(flagFilename.c_str(), false, image_w, image_h);
+
+    glBindTexture(GL_TEXTURE_2D, texture[2]);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -323,14 +349,27 @@ void myDisplay(void)
     texLoc = glGetUniformLocation(glslProgram_texture, "tex1");
     glUniform1i(texLoc, 1);
 
+    texLoc = glGetUniformLocation(glslProgram_texture, "tex2");
+    glUniform1i(texLoc, 2);
+
+    texLoc = glGetUniformLocation(glslProgram_texture, "tex3");
+    glUniform1i(texLoc, 3);
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture[0]);
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture[1]);
 
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, texture[2]);
+
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, texture[3]);
+
     glColor3f(0, 0, 1);
 
+    // Draw earth
     glPushMatrix ();
         glTranslatef    (-3, 0.0, 0.0);
         GLUquadricObj* earth = nullptr;
@@ -345,10 +384,13 @@ void myDisplay(void)
     GLuint loc = glGetUniformLocation(glslProgram_texture, "textureMars");
     glUniform1f(loc, 0);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture[4]);
+    glBindTexture(GL_TEXTURE_2D, texture[1]);
 
-    glPushMatrix ();
-        glTranslatef    (4.1, 0.0, 0.0);
+    // Draw Mars
+    if (showMars)
+    {
+        glPushMatrix ();
+        glTranslatef(4.1, 0.0, 0.0);
         GLUquadricObj* mars = nullptr;
         mars = gluNewQuadric();
         gluQuadricDrawStyle(mars, GLU_FILL);
@@ -356,7 +398,40 @@ void myDisplay(void)
         gluQuadricNormals(mars, GLU_SMOOTH);
         gluSphere(mars, 2.7, 80, 80);
         gluDeleteQuadric(mars);
-    glPopMatrix ();
+        glPopMatrix();
+
+        if (showFlag)
+        {
+            // Draw flag handler
+            loc = glGetUniformLocation(glslProgram_texture, "textureBlack");
+            glUniform1f(loc, 0);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture[3]);
+            glPushMatrix ();
+            glBegin(GL_LINE_STRIP);
+            glLineWidth(20.0);
+            glColor3d(0.0, 0.0, 0.0);
+            glVertex3d(3.0, 4.0, 0.0);
+            glVertex3d(4.1, 0.0, 0.0);
+            glEnd();
+            glPopMatrix ();
+
+            loc = glGetUniformLocation(glslProgram_texture, "textureFlag");
+            glUniform1f(loc, 0);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture[2]);
+
+            // Draw flag
+            glPushMatrix ();
+            glBegin(GL_QUADS);
+            glTexCoord2f(0, 0); glVertex3f(3.0, 4.0, 0);
+            glTexCoord2f(0, 1); glVertex3f(3.0, 6.0, 0);
+            glTexCoord2f(1, 1); glVertex3f(6.0, 6.0, 0);
+            glTexCoord2f(1, 0); glVertex3f(6.0, 4.0, 0);
+            glEnd();
+            glPopMatrix ();
+        }
+    }
 
     glutSwapBuffers();
 
@@ -416,6 +491,16 @@ void myKeyboard(unsigned char key, int x, int y)
     else if (key == '6')
     {
         lPos[2] += 0.1f;
+    }
+
+    else if (key == 'm')
+    {
+        showMars = !showMars;
+    }
+
+    else if (key == 'c')
+    {
+        showFlag = !showFlag;
     }
 
     glutPostRedisplay();
