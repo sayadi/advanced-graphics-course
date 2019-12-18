@@ -74,22 +74,55 @@ bool showFlag = false;
 bool animateFlag = false;
 double offset = 0.0;
 int counter = 0;
-Point p1 = Point(3.0, 4.0, 0);
-Point p2 = Point(3.0, 6.0, 0);
-Point p3 = Point(6.0, 6.0, 0);
-Point p4 = Point(6.0, 4.0, 0);
 
-bool spheresIntersection(Point c1, double r1, Point c2, double r2, Point* center, Vector* normal) {
+bool spheresIntersection(Point c1, double r1, Point c2, double r2, Point& center, Vector& normal) {
+
     double length = (c1 - c2).norm();
     if (length > r1 + r2) return false;
+
+    double diff = length - (r1 + r2);
+    diff *= 0.1f;
+    r1 += diff;
     double side1 = length - r1;
     double side2 = length - r2;
     double middle = length - side1 - side2;
-    Vector tempVec = (c1 - c2) / length;
-    Point tempPnt = c1 + (tempVec * (side1 + middle / 2));
-    normal = &tempVec;
-    center = &tempPnt;
+    Vector tempVec = normalize(c1 - c2);
+    Point tempPnt = c2 + (tempVec * ( side1 + middle / 2.0));
+    normal = tempVec;
+    center = tempPnt;
+
+    cout << "plane center inside function = " << center << endl;
+    cout << "plane normal inside function = " << normal << endl;
     return true;
+}
+
+void intersectionPlanePoints(Point center, Vector normal, Point &v1, Point &v2, Point &v3, Point &v4)
+{
+    double randomX = center.x + 8.0;
+    double randomY = center.y + 2.5;
+
+    if (normal.z == 0.0)
+    {
+        normal.z = 0.001;
+    }
+    double randomZ = ( (center.x - randomX) * (normal.x) + (center.y - randomY) * (normal.y) ) / (normal.z) + center.z;
+
+    cout << "randomZ = " << randomZ << endl;
+
+    Point p = Point(randomX, randomY, randomZ);
+
+    // normalized tangent
+    Vector t = normalize(p - center);
+    // bi-tangent
+    Vector b = t * normal;
+
+    double D = earthR;
+
+    v1 = center - t*D - b*D;
+    v2 = center + t*D - b*D;
+    v3 = center + t*D + b*D;
+    v4 = center - t*D + b*D;
+
 }
 #define printOpenGLError() printOglError(__FILE__, __LINE__)
 // Returns 1 if an OpenGL error occurred, 0 otherwise.
@@ -433,25 +466,11 @@ void myDisplay(void)
 
         if (showFlag)
         {
-            double p1x = p1.x + offset;
-            double p1y = p1.y;
-            double p1z = p1.z;
-            p1 = Point(p1x, p1y, p1z);
+            Point p1 = Point(marsX + 1.0, marsY + 4.0, marsZ + 0);
+            Point p2 = Point(marsX + 1.0, marsY + 6.0, marsZ + 0);
+            Point p3 = Point(marsX + 4.0, marsY + 6.0, marsZ + 0);
+            Point p4 = Point(marsX + 4.0, marsY + 4.0, marsZ + 0);
 
-            double p2x = p2.x + offset;
-            double p2y = p2.y;
-            double p2z = p2.z;
-            p2 = Point(p2x, p2y, p2z);
-
-            double p3x = p3.x + offset;
-            double p3y = p3.y;
-            double p3z = p3.z;
-            p3 = Point(p3x, p3y, p3z);
-
-            double p4x = p4.x + offset;
-            double p4y = p4.y;
-            double p4z = p4.z;
-            p4 = Point(p4x, p4y, p4z);
             // Draw flag handler
             loc = glGetUniformLocation(glslProgram_texture, "textureBlack");
             glUniform1f(loc, 0);
@@ -461,8 +480,8 @@ void myDisplay(void)
             glBegin(GL_LINE_STRIP);
             glLineWidth(20.0);
             glColor3d(0.0, 0.0, 0.0);
-            glVertex3d(3.0, 4.0, 0.0);
-            glVertex3d(4.1, 0.0, 0.0);
+            glVertex3d(marsX + 1.0, marsY + 4.0, marsZ + 0.0);
+            glVertex3d(marsX + 1.0, marsY, marsZ);
             glEnd();
             glPopMatrix ();
 
@@ -482,7 +501,38 @@ void myDisplay(void)
             glPopMatrix ();
         }
 
+        Point earthC = Point(earthX, earthY, earthZ);
+        Point marsC = Point(marsX, marsY, marsZ);
 
+        Point planeCenter;
+        Vector planeNormal;
+
+        bool spheresIntersect = spheresIntersection(earthC, earthR, marsC, marsR, planeCenter, planeNormal);
+
+        cout << "spheresIntersect = " << spheresIntersect << endl;
+
+        if (spheresIntersect)
+        {
+            cout << "plane center = " << planeCenter << endl;
+            cout << "plane normal = " << planeNormal << endl;
+
+            Point v1, v2, v3, v4;
+            intersectionPlanePoints(planeCenter, planeNormal, v1, v2, v3, v4);
+
+            cout << "v1 = " << v1 << endl;
+            cout << "v2 = " << v2 << endl;
+            cout << "v3 = " << v3 << endl;
+            cout << "v4 = " << v4 << endl;
+
+            glBegin(GL_QUADS);
+            glLineWidth(20.0);
+            glColor3d(0.0, 0.0, 0.0);
+            glVertex3d(v1.x, v1.y, v1.z);
+            glVertex3d(v2.x, v2.y, v2.z);
+            glVertex3d(v3.x, v3.y, v3.z);
+            glVertex3d(v4.x, v4.y, v4.z);
+            glEnd();
+        }
     }
 
     glutSwapBuffers();
@@ -667,7 +717,7 @@ int main(int argc, char** argv)
 
     glutInitWindowSize(screenWidth, screenHeight);
     glutInitWindowPosition(100, 100);
-    glutCreateWindow("Group Project");
+    glutCreateWindow("Group Project - Mohamad and Omar");
 
     glEnable(GL_DEPTH_TEST);
 
